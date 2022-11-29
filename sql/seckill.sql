@@ -22,13 +22,13 @@ CREATE TABLE `goods`
 
 LOCK TABLES `goods` WRITE;
 INSERT INTO `goods`
-VALUES (1, ' iPhone X', ' 当天发/12分期/送大礼 Apple/苹果 iPhone X移动联通4G手机中移动', '/img/iphone.jpg',
+VALUES (1, ' iPhone X', ' 当天发/12分期/送大礼 Apple/苹果 iPhone X移动联通4G手机中移动', '/img/phone1.jpg',
         ' 当天发/12分期/送大礼 Apple/苹果 iPhone X移动联通4G手机中移动', 7268.00, 1000, '2022-07-12 19:06:20', '2023-07-12 19:06:20'),
-       (2, 'xiaomi 8', ' 小米8现货【送小米耳机】Xiaomi/小米 小米8手机8plus中移动8se', '/img/xiaomi.jpg',
+       (2, 'xiaomi 8', ' 小米8现货【送小米耳机】Xiaomi/小米 小米8手机8plus中移动8se', '/img/phone2.jpg',
         ' 小米8现货【送小米耳机】Xiaomi/小米 小米8手机8plus中移动8se', 2799.00, 1000, '2022-07-12 19:06:20', '2023-07-12 19:06:20'),
-       (3, '荣耀 10', ' 12期分期/honor/荣耀10手机中移动官方旗舰店正品荣耀10手机playv10 plαy', '/img/rongyao.jpg',
+       (3, '荣耀 10', ' 12期分期/honor/荣耀10手机中移动官方旗舰店正品荣耀10手机playv10 plαy', '/img/phone3.jpg',
         ' 12期分期/honor/荣耀10手机中移动官方旗舰店正品荣耀10手机playv10 plαy', 2699.00, 1000, '2022-07-12 19:06:20', '2023-07-12 22:32:20'),
-       (4, 'oppo find x', ' OPPO R15 oppor15手机全新机限量超薄梦境r15梦镜版r11s find x', '/img/oppo.jpg',
+       (4, 'oppo find x', ' OPPO R15 oppor15手机全新机限量超薄梦境r15梦镜版r11s find x', '/img/phone4.jpg',
         ' OPPO R15 oppor15手机全新机限量超薄梦境r15梦镜版r11s find x', 4999.00, 1000, '2022-07-12 19:06:20', '2023-07-12 19:06:20');
 UNLOCK TABLES;
 
@@ -43,10 +43,9 @@ CREATE TABLE `order_info`
     `goods_name`    varchar(16)    DEFAULT NULL COMMENT '冗余过来的商品名称',
     `goods_count`   int(11)        DEFAULT NULL COMMENT '商品数量',
     `goods_price`   decimal(10, 2) DEFAULT NULL COMMENT '商品价格',
-    `order_channel` int(2)         DEFAULT '0' COMMENT '支付通道：1 PC、2 Android、3 ios',
-    `status`        int(2)         DEFAULT NULL COMMENT '订单状态：0 未支付，1已支付，2 已发货，3 已收货，4 已退款，‘5 已完成',
+    `order_channel` int(2)         DEFAULT 0 COMMENT '支付通道：1 PC、2 Android、3 ios',
+    `status`        int(2)         DEFAULT -1 COMMENT '订单状态：0 未支付，1 已支付，2 已发货，3 已收货，4 已退款，‘5 已完成',
     `create_date`   datetime       DEFAULT NULL,
-    `pay_date`      datetime       DEFAULT NULL COMMENT '支付时间',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 43
@@ -106,3 +105,8 @@ CREATE TABLE `users`
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1410085408
   DEFAULT CHARSET = utf8;
+
+INSERT INTO `hang-seckill`.`users`
+(`user_name`, `phone`, `password`, `salt`, `login_count`, `register_date`, `last_login_date`)
+values ('hang', '15387113436', 'ae2fe40a6242ef07a35a30da2232e10a', '9d5b364d', 1, '2022-11-29 18:02:00',
+        '2022-11-29 18:02:00')

@@ -4,22 +4,23 @@ import com.hang.seckill.common.Const;
 import com.hang.seckill.mq.MQSender;
 import com.hang.seckill.mq.SeckillMessage;
 import com.hang.seckill.pojo.bo.GoodsBo;
-import com.hang.seckill.pojo.entity.OrderInfo;
 import com.hang.seckill.pojo.entity.SeckillOrder;
 import com.hang.seckill.pojo.entity.Users;
 import com.hang.seckill.pojo.result.CodeMsg;
 import com.hang.seckill.pojo.result.Result;
-import com.hang.seckill.redis.GoodsKey;
-import com.hang.seckill.redis.RedisService;
-import com.hang.seckill.redis.UserKey;
 import com.hang.seckill.service.SeckillGoodsService;
 import com.hang.seckill.service.SeckillOrderService;
 import com.hang.seckill.util.CookieUtil;
+import com.hang.seckill.util.JSONUtil;
+import com.hang.seckill.util.RedisUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -30,7 +31,7 @@ import java.util.List;
 public class SeckillController implements InitializingBean {
 
     @Autowired
-    private RedisService redisService;
+    private RedisUtil redisUtil;
 
     @Autowired
     private SeckillGoodsService seckillGoodsService;
@@ -41,13 +42,11 @@ public class SeckillController implements InitializingBean {
     @Autowired
     private MQSender mqSender;
 
-    /**
-     * 如果是集群情况下，需要达到一定量此缓存才能起到重大作用
-     */
+    // 本地缓存
     private final HashMap<Long, Boolean> localOverMap = new HashMap<>();
 
     /**
-     * 将库存初始化到本地缓存及redis缓存，原则上次块应该在创建秒杀活动时候触发的（为了演示，此项目没有创建活动逻辑，所有放在启动项目时候放进内存）
+     * 数据预热
      */
     public void afterPropertiesSet() throws Exception {
         List<GoodsBo> goodsList = seckillGoodsService.getSeckillGoodsList();
@@ -55,42 +54,9 @@ public class SeckillController implements InitializingBean {
             return;
         }
         for (GoodsBo goods : goodsList) {
-            redisService.set(GoodsKey.getSeckillGoodsStock, String.valueOf(goods.getId()), goods.getStockCount(), Const.RedisCacheExtime.GOODS_LIST);
+            redisUtil.set(Const.GOODS_STOCK_PREFIX + goods.getId(), JSONUtil.obj2Str(goods.getStockCount()), Const.GOODS_LIST_EXPIRE);
             localOverMap.put(goods.getId(), false);
         }
-    }
-
-    /**
-     * 发起秒杀
-     */
-    @GetMapping("/seckill")
-    public String seckill(Model model,
-                          @RequestParam("goodsId") long goodsId, HttpServletRequest request) {
-
-        String loginToken = CookieUtil.readLoginToken(request);
-        Users user = redisService.get(UserKey.getByName, loginToken, Users.class);
-        model.addAttribute("user", user);
-        if (user == null) {
-            return "login";
-        }
-        //判断库存
-        GoodsBo goods = seckillGoodsService.getseckillGoodsBoByGoodsId(goodsId);
-        int stock = goods.getStockCount();
-        if (stock <= 0) {
-            model.addAttribute("errmsg", CodeMsg.MIAO_SHA_OVER.getMsg());
-            return "miaosha_fail";
-        }
-        //判断是否已经秒杀到了
-        SeckillOrder order = seckillOrderService.getSeckillOrderByUserIdGoodsId(user.getId(), goodsId);
-        if (order != null) {
-            model.addAttribute("errmsg", CodeMsg.REPEATE_MIAOSHA.getMsg());
-            return "miaosha_fail";
-        }
-        //减库存 下订单 写入秒杀订单
-        OrderInfo orderInfo = seckillOrderService.insert(user, goods);
-        model.addAttribute("orderInfo", orderInfo);
-        model.addAttribute("goods", goods);
-        return "order_detail";
     }
 
     @GetMapping("/{path}/seckill/{goodsId}")
@@ -101,7 +67,7 @@ public class SeckillController implements InitializingBean {
                                 HttpServletRequest request) {
 
         String loginToken = CookieUtil.readLoginToken(request);
-        Users user = redisService.get(UserKey.getByName, loginToken, Users.class);
+        Users user = redisUtil.get(Const.USER_INFO_PREFIX + loginToken, Users.class);
         if (user == null) {
             return Result.error(CodeMsg.USER_NO_LOGIN);
         }
@@ -116,7 +82,7 @@ public class SeckillController implements InitializingBean {
             return Result.error(CodeMsg.MIAO_SHA_OVER);
         }
         //预减库存
-        long stock = redisService.decr(GoodsKey.getSeckillGoodsStock, String.valueOf(goodsId));
+        long stock = redisUtil.decr(Const.GOODS_STOCK_PREFIX + goodsId);
         if (stock < 0) {
             localOverMap.put(goodsId, true);
             return Result.error(CodeMsg.MIAO_SHA_OVER);
@@ -136,7 +102,7 @@ public class SeckillController implements InitializingBean {
 
     /**
      * 客户端轮询查询是否下单成功
-     * 1：成功
+     * orderId：成功
      * -1：秒杀失败
      * 0： 排队中
      */
@@ -144,7 +110,7 @@ public class SeckillController implements InitializingBean {
     @ResponseBody
     public Result<Long> miaoshaResult(@PathVariable("goodsId") long goodsId, HttpServletRequest request) {
         String loginToken = CookieUtil.readLoginToken(request);
-        Users user = redisService.get(UserKey.getByName, loginToken, Users.class);
+        Users user = redisUtil.get(Const.USER_INFO_PREFIX + loginToken, Users.class);
         if (user == null) {
             return Result.error(CodeMsg.USER_NO_LOGIN);
         }
@@ -156,7 +122,7 @@ public class SeckillController implements InitializingBean {
     @ResponseBody
     public Result<String> getMiaoshaPath(HttpServletRequest request, @PathVariable("goodsId") long goodsId) {
         String loginToken = CookieUtil.readLoginToken(request);
-        Users user = redisService.get(UserKey.getByName, loginToken, Users.class);
+        Users user = redisUtil.get(Const.USER_INFO_PREFIX + loginToken, Users.class);
         if (user == null) {
             return Result.error(CodeMsg.USER_NO_LOGIN);
         }

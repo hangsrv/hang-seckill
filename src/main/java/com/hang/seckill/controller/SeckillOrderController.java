@@ -1,13 +1,13 @@
 package com.hang.seckill.controller;
 
+import com.hang.seckill.common.Const;
 import com.hang.seckill.pojo.bo.GoodsBo;
 import com.hang.seckill.pojo.entity.OrderInfo;
 import com.hang.seckill.pojo.entity.Users;
-import com.hang.seckill.redis.RedisService;
-import com.hang.seckill.redis.UserKey;
 import com.hang.seckill.service.SeckillGoodsService;
 import com.hang.seckill.service.SeckillOrderService;
 import com.hang.seckill.util.CookieUtil;
+import com.hang.seckill.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,7 +22,7 @@ import java.util.List;
 @RequestMapping("/order")
 public class SeckillOrderController {
     @Autowired
-    RedisService redisService;
+    private RedisUtil redisUtil;
     @Autowired
     SeckillOrderService seckillOrderService;
     @Autowired
@@ -32,7 +32,7 @@ public class SeckillOrderController {
     public String info(Model model,
                        @PathVariable("orderId") long orderId, HttpServletRequest request) {
         String loginToken = CookieUtil.readLoginToken(request);
-        Users user = redisService.get(UserKey.getByName, loginToken, Users.class);
+        Users user = redisUtil.get(Const.USER_INFO_PREFIX + loginToken, Users.class);
         if (user == null) {
             return "login";
         }
@@ -41,7 +41,7 @@ public class SeckillOrderController {
             return "error/404";
         }
         long goodsId = orderInfo.getGoodsId();
-        GoodsBo goods = seckillGoodsService.getseckillGoodsBoByGoodsId(goodsId);
+        GoodsBo goods = seckillGoodsService.getSeckillGoodsBoByGoodsId(goodsId);
         model.addAttribute("orderInfo", orderInfo);
         model.addAttribute("goods", goods);
         model.addAttribute("user", user);
@@ -52,7 +52,7 @@ public class SeckillOrderController {
     public String list(Model model,
                        @PathVariable("userId") long userId, HttpServletRequest request) {
         String loginToken = CookieUtil.readLoginToken(request);
-        Users user = redisService.get(UserKey.getByName, loginToken, Users.class);
+        Users user = redisUtil.get(Const.USER_INFO_PREFIX + loginToken, Users.class);
         if (user == null) {
             return "login";
         }

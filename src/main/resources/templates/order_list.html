@@ -9,10 +9,7 @@
 
     <script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
     <script type="text/javascript" th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
-    <script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.min.js}"></script>
-    <script type="text/javascript" th:src="@{/jquery-validation/localization/messages_zh.min.js}"></script>
     <script type="text/javascript" th:src="@{/layer/layer.js}"></script>
-    <script type="text/javascript" th:src="@{/js/md5.min.js}"></script>
     <script type="text/javascript" th:src="@{/js/common.js}"></script>
 
 </head>
@@ -32,8 +29,9 @@
     <table class="table" id="goodslist">
         <div class="seckill_goods" th:each="order : ${orders}">
             <tr>
-                <td><a th:href="@{/order/detail/} + ${order.id}">商品名称</a></td>
+                <td><a th:href="@{/order/detail/} + ${order.id}">商品名称 </a></td>
                 <td th:text="${order.goodsName}" colspan="3"></td>
+
             </tr>
             <tr>
                 <td>商品数量</td>
@@ -57,9 +55,6 @@
                     <span th:if="${order.status eq 3}">已收货</span>
                     <span th:if="${order.status eq 4}">已退款</span>
                     <span th:if="${order.status eq 5}">已完成</span>
-                </td>
-                <td>
-                    <button class="btn btn-primary btn-block" type="submit" id="payButton">立即支付</button>
                 </td>
             </tr>
         </div>

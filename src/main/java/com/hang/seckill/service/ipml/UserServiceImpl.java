@@ -3,8 +3,6 @@ package com.hang.seckill.service.ipml;
 import com.hang.seckill.mapper.UsersMapper;
 import com.hang.seckill.pojo.entity.Users;
 import com.hang.seckill.pojo.param.LoginParam;
-import com.hang.seckill.pojo.result.CodeMsg;
-import com.hang.seckill.pojo.result.Result;
 import com.hang.seckill.service.UserService;
 import com.hang.seckill.util.MD5Util;
 import org.apache.commons.lang3.StringUtils;
@@ -18,19 +16,19 @@ public class UserServiceImpl implements UserService {
     UsersMapper userMapper;
 
     @Override
-    public Result<Users> login(LoginParam loginParam) {
+    public Users login(LoginParam loginParam) {
 
         Users user = userMapper.selectByPhone(loginParam.getMobile());
         if (user == null) {
-            return Result.error(CodeMsg.MOBILE_NOT_EXIST);
+            return null;
         }
         String dbPwd = user.getPassword();
         String saltDB = user.getSalt();
         String calcPass = MD5Util.formPassToDBPass(loginParam.getPassword(), saltDB);
         if (!StringUtils.equals(dbPwd, calcPass)) {
-            return Result.error(CodeMsg.PASSWORD_ERROR);
+            return null;
         }
         user.setPassword(StringUtils.EMPTY);
-        return Result.success(user);
+        return user;
     }
 }

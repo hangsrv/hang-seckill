@@ -14,7 +14,7 @@ public interface SeckillOrderMapper {
             "#{orderId,jdbcType=BIGINT}, #{goodsId,jdbcType=BIGINT})"
     })
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    void insert(SeckillOrder record);
+    void addSeckillOrder(SeckillOrder record);
 
     @Select({
             "select",

@@ -4,16 +4,6 @@ function g_showLoading() {
     return idx;
 }
 
-//salt
-var g_passsword_salt = "9d5b364d"
-
-// 获取url参数
-function g_getQueryString(name) {
-    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-    var r = window.location.search.substr(1).match(reg);
-    if (r != null) return unescape(r[2]);
-    return null;
-};
 //设定时间格式化函数，使用new Date().format("yyyyMMddhhmmss");
 Date.prototype.format = function (format) {
     var args = {

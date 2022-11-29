@@ -14,8 +14,8 @@ public class OrderServiceImpl implements OrderService {
     OrderInfoMapper orderInfoMapper;
 
     @Override
-    public long addOrder(OrderInfo orderInfo) {
-        return orderInfoMapper.insert(orderInfo);
+    public void addOrder(OrderInfo orderInfo) {
+        orderInfoMapper.insert(orderInfo);
     }
 
     @Override

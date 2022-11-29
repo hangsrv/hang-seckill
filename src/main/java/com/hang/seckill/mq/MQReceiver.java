@@ -1,13 +1,13 @@
 package com.hang.seckill.mq;
 
-import com.hang.seckill.mapper.OrderInfoMapper;
 import com.hang.seckill.pojo.bo.GoodsBo;
 import com.hang.seckill.pojo.entity.SeckillOrder;
 import com.hang.seckill.pojo.entity.Users;
-import com.hang.seckill.redis.RedisService;
 import com.hang.seckill.service.OrderService;
 import com.hang.seckill.service.SeckillGoodsService;
 import com.hang.seckill.service.SeckillOrderService;
+import com.hang.seckill.util.JSONUtil;
+import com.hang.seckill.util.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,28 +18,25 @@ import org.springframework.stereotype.Service;
 public class MQReceiver {
 
     @Autowired
-    RedisService redisService;
+    private RedisUtil redisUtil;
 
     @Autowired
-    SeckillGoodsService goodsService;
+    private SeckillGoodsService goodsService;
 
     @Autowired
-    OrderService orderService;
+    private OrderService orderService;
 
     @Autowired
-    SeckillOrderService seckillOrderService;
-
-    @Autowired
-    OrderInfoMapper orderInfoMapper;
+    private SeckillOrderService seckillOrderService;
 
     @RabbitListener(queues = MQConfig.MIAOSHA_QUEUE)
     public void MSReceive(String message) {
         log.info("MSReceive receive message:" + message);
-        SeckillMessage mm = RedisService.stringToBean(message, SeckillMessage.class);
+        SeckillMessage mm = JSONUtil.str2obj(message, SeckillMessage.class);
         Users user = mm.getUser();
         long goodsId = mm.getGoodsId();
 
-        GoodsBo goods = goodsService.getseckillGoodsBoByGoodsId(goodsId);
+        GoodsBo goods = goodsService.getSeckillGoodsBoByGoodsId(goodsId);
         int stock = goods.getStockCount();
         if (stock <= 0) {
             return;
@@ -51,6 +48,5 @@ public class MQReceiver {
         }
         //减库存 下订单 写入秒杀订单
         seckillOrderService.insert(user, goods);
-        orderInfoMapper.updateOrderStatus(goodsId, user.getId(), 1);
     }
 }

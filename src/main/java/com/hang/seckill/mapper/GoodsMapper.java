@@ -14,9 +14,9 @@ public interface GoodsMapper {
     @Update({
             "update goods",
             "set goods_stock = goods_stock - 1",
-            "where id = #{id,jdbcType=BIGINT}"
+            "where id = #{id,jdbcType=BIGINT} and goods_stock > 0"
     })
-    int updateStock(Long goodsId);
+    int reduceStock(Long goodsId);
 
     @Select({
             "select",
@@ -42,7 +42,7 @@ public interface GoodsMapper {
             @Arg(column = "update_date", jdbcType = JdbcType.TIMESTAMP, javaType = Date.class),
             @Arg(column = "goods_detail", jdbcType = JdbcType.LONGVARCHAR, javaType = String.class)
     })
-    GoodsBo getseckillGoodsBoByGoodsId(Long goodsId);
+    GoodsBo getSeckillGoodsBoByGoodsId(Long goodsId);
 
     @Select({
             "select",

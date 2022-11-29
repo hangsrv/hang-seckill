@@ -3,21 +3,17 @@ package com.hang.seckill.controller;
 import com.hang.seckill.common.Const;
 import com.hang.seckill.pojo.bo.GoodsBo;
 import com.hang.seckill.pojo.entity.Users;
-import com.hang.seckill.redis.GoodsKey;
-import com.hang.seckill.redis.RedisService;
-import com.hang.seckill.redis.UserKey;
 import com.hang.seckill.service.SeckillGoodsService;
 import com.hang.seckill.util.CookieUtil;
-import com.hang.seckill.util.JsonUtil;
+import com.hang.seckill.util.JSONUtil;
+import com.hang.seckill.util.RedisUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,60 +24,50 @@ import java.util.List;
 public class GoodsController {
 
     @Autowired
-    RedisService redisService;
+    private RedisUtil redisUtil;
 
     @Autowired
-    SeckillGoodsService seckillGoodsService;
+    private SeckillGoodsService seckillGoodsService;
 
-    @Autowired
-    ThymeleafViewResolver thymeleafViewResolver;
-
-    @Autowired
-    ApplicationContext applicationContext;
-
-    /***
-     * 商品列表
-     */
+    // 商品列表
     @GetMapping("/list")
     public String list(Model model, HttpServletRequest request, HttpServletResponse response) {
         String loginToken = CookieUtil.readLoginToken(request);
-        Users user = redisService.get(UserKey.getByName, loginToken, Users.class);
+        Users user = redisUtil.get(Const.USER_INFO_PREFIX + loginToken, Users.class);
         if (user != null) {
             model.addAttribute("user", user);
         }
-        String goodsListStr = redisService.get(GoodsKey.getGoodsList, "", String.class);
+        String goodsListStr = redisUtil.get(Const.GOODS_LIST_PREFIX, String.class);
         List<GoodsBo> goodsBoList;
         if (!StringUtils.isEmpty(goodsListStr)) {
-            goodsBoList = JsonUtil.str2ObjArr(goodsListStr, GoodsBo.class);
+            goodsBoList = JSONUtil.str2ObjArr(goodsListStr, GoodsBo.class);
         } else {
             goodsBoList = seckillGoodsService.getSeckillGoodsList();
-            redisService.set(GoodsKey.getGoodsList, "", JsonUtil.obj2Str(goodsBoList), Const.RedisCacheExtime.GOODS_LIST);
+            redisUtil.set(Const.GOODS_LIST_PREFIX, JSONUtil.obj2Str(goodsBoList), Const.GOODS_LIST_EXPIRE);
         }
         model.addAttribute("goodsList", goodsBoList);
         return "goods_list";
     }
 
-    /***
-     * 商品详情
-     */
+    // 商品详情
     @GetMapping("/detail/{goodsId}")
     public String detail(Model model,
                          @PathVariable("goodsId") long goodsId, HttpServletRequest request) {
         String loginToken = CookieUtil.readLoginToken(request);
-        Users user = redisService.get(UserKey.getByName, loginToken, Users.class);
+        Users user = redisUtil.get(Const.USER_INFO_PREFIX + loginToken, Users.class);
         if (user != null) {
             model.addAttribute("user", user);
         }
-        GoodsBo goods = redisService.get(GoodsKey.getGoodsDetail, String.valueOf(goodsId), GoodsBo.class);
+        GoodsBo goods = redisUtil.get(Const.GOODS_DETAIL_PREFIX + goodsId, GoodsBo.class);
         if (goods == null) {
-            goods = seckillGoodsService.getseckillGoodsBoByGoodsId(goodsId);
+            goods = seckillGoodsService.getSeckillGoodsBoByGoodsId(goodsId);
             if (goods != null) {
-                redisService.set(GoodsKey.getGoodsDetail, String.valueOf(goodsId), goods, Const.RedisCacheExtime.GOODS_INFO);
+                redisUtil.set(Const.GOODS_DETAIL_PREFIX + goodsId, JSONUtil.obj2Str(goods), Const.GOODS_INFO_EXPIRE);
             } else {
                 return "error/404";
             }
         }
-        Integer stock = redisService.get(GoodsKey.getSeckillGoodsStock, String.valueOf(goodsId), Integer.class);
+        Integer stock = redisUtil.get(Const.GOODS_STOCK_PREFIX + goodsId, Integer.class);
         goods.setStockCount(stock);
         model.addAttribute("goods", goods);
         long startAt = goods.getStartDate().getTime();

@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 @Slf4j
-public class JsonUtil {
+public class JSONUtil {
 
     public static <T> String obj2Str(T obj) {
         return JSON.toJSONString(obj);

@@ -17,7 +17,7 @@ public class GoodsMapperTest {
 
     @Test
     public void getseckillGoodsBoByGoodsIdTest() {
-        GoodsBo goodsBo = goodsMapper.getseckillGoodsBoByGoodsId(1L);
+        GoodsBo goodsBo = goodsMapper.getSeckillGoodsBoByGoodsId(1L);
         log.info("{}", goodsBo);
     }
 

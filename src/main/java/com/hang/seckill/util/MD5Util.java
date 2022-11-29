@@ -11,12 +11,12 @@ public class MD5Util {
     private static final String salt = "9d5b364d";
 
     public static String inputPassToFormPass(String inputPass) {
-        String str = "" + salt.charAt(0) + salt.charAt(2) + inputPass + salt.charAt(5) + salt.charAt(4);
+        String str = salt.charAt(0) + salt.charAt(2) + inputPass + salt.charAt(5) + salt.charAt(4);
         return md5(str);
     }
 
     public static String formPassToDBPass(String formPass, String salt) {
-        String str = "" + salt.charAt(0) + salt.charAt(2) + formPass + salt.charAt(5) + salt.charAt(4);
+        String str = salt.charAt(0) + salt.charAt(2) + formPass + salt.charAt(5) + salt.charAt(4);
         return md5(str);
     }
 
@@ -26,7 +26,7 @@ public class MD5Util {
     }
 
     public static void main(String[] args) {
-        System.out.println(inputPassToDbPass("12345678", "9d5b364d"));//cd235d8b395725d4c3352e9689f346b6
+        System.out.println(formPassToDBPass("123456", "9d5b364d"));//7f06f6604c3dd218afdd06cc6e0dc4b7
     }
 
 }

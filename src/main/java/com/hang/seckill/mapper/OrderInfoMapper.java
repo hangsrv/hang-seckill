@@ -16,7 +16,7 @@ public interface OrderInfoMapper {
             "goods_id, addr_id, goods_name, ",
             "goods_count, goods_price, ",
             "order_channel, status, ",
-            "create_date, pay_date)",
+            "create_date)",
             "values (#{userId,jdbcType=BIGINT}, ",
             "#{goodsId,jdbcType=BIGINT}, #{addrId,jdbcType=BIGINT}, #{goodsName,jdbcType=VARCHAR}, ",
             "#{goodsCount,jdbcType=INTEGER}, #{goodsPrice,jdbcType=DECIMAL}, ",
@@ -24,12 +24,12 @@ public interface OrderInfoMapper {
             "#{createDate,jdbcType=TIMESTAMP})"
     })
     @Options(useGeneratedKeys = true, keyProperty = "id")
-    int insert(OrderInfo record);
+    void insert(OrderInfo record);
 
     @Select({
             "select",
             "id, user_id, goods_id, addr_id, goods_name, goods_count, goods_price, order_channel, ",
-            "status, create_date, pay_date",
+            "status, create_date ",
             "from order_info",
             "where id = #{id,jdbcType=BIGINT}"
     })
@@ -44,14 +44,13 @@ public interface OrderInfoMapper {
             @Arg(column = "order_channel", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Arg(column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Arg(column = "create_date", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
-            @Arg(column = "pay_date", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP)
     })
     OrderInfo selectByPrimaryKey(Long id);
 
     @Select({
             "select",
             "id, user_id, goods_id, addr_id, goods_name, goods_count, goods_price, order_channel, ",
-            "status, create_date, pay_date",
+            "status, create_date",
             "from order_info",
             "where user_id = #{userId,jdbcType=BIGINT}"
     })
@@ -66,14 +65,7 @@ public interface OrderInfoMapper {
             @Arg(column = "order_channel", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Arg(column = "status", javaType = Integer.class, jdbcType = JdbcType.INTEGER),
             @Arg(column = "create_date", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP),
-            @Arg(column = "pay_date", javaType = Date.class, jdbcType = JdbcType.TIMESTAMP)
     })
     List<OrderInfo> getOrderInfoList(long userId);
 
-    @Update({
-            "update order_info",
-            "set status = #{status,jdbcType=INTEGER} ",
-            "where goods_id = #{goodsId,jdbcType=BIGINT} and user_id = #{userId,jdbcType=BIGINT}"
-    })
-    void updateOrderStatus(long goodsId, long userId, Integer status);
 }

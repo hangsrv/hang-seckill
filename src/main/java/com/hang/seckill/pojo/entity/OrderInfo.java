@@ -30,6 +30,4 @@ public class OrderInfo {
     private Integer status;
 
     private Date createDate;
-
-    private Date payDate;
 }

@@ -6,9 +6,10 @@ import java.util.List;
 
 public interface OrderService {
 
-    long addOrder(OrderInfo orderInfo);
+    void addOrder(OrderInfo orderInfo);
 
     OrderInfo getOrderInfo(long orderId);
 
     List<OrderInfo> getOrderInfoList(long userId);
+
 }
