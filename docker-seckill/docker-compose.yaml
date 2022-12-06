@@ -1,0 +1,151 @@
+version: '3'
+services:
+  # seckill redis node 0
+  seckill-redis-node-0:
+    image: redis
+    container_name: seckill-redis-node-0
+    command: redis-server /etc/usr/local/redis.conf
+    volumes:
+      - ./redisConf/seckill-redis-node-0.conf:/etc/usr/local/redis.conf
+    networks:
+      hang-seckill:
+        aliases:
+          - seckill-redis-node-0
+    hostname: seckill-redis-node-0
+    ports:
+      - 6380:6380
+      - 16380:16380
+
+  # seckill redis node 1
+  seckill-redis-node-1:
+    image: redis
+    container_name: seckill-redis-node-1
+    command: redis-server /etc/usr/local/redis.conf
+    volumes:
+      - ./redisConf/seckill-redis-node-1.conf:/etc/usr/local/redis.conf
+    networks:
+      hang-seckill:
+        aliases:
+          - seckill-redis-node-1
+    hostname: seckill-redis-node-1
+    ports:
+      - 6381:6381
+      - 16381:16381
+
+  # seckill redis node 2
+  seckill-redis-node-2:
+    image: redis
+    container_name: seckill-redis-node-2
+    command: redis-server /etc/usr/local/redis.conf
+    volumes:
+      - ./redisConf/seckill-redis-node-2.conf:/etc/usr/local/redis.conf
+    networks:
+      hang-seckill:
+        aliases:
+          - seckill-redis-node-2
+    hostname: seckill-redis-node-2
+    ports:
+      - 6382:6382
+      - 16382:16382
+
+  # seckill redis node 3
+  seckill-redis-node-3:
+    image: redis
+    container_name: seckill-redis-node-3
+    command: redis-server /etc/usr/local/redis.conf
+    volumes:
+      - ./redisConf/seckill-redis-node-3.conf:/etc/usr/local/redis.conf
+    networks:
+      hang-seckill:
+        aliases:
+          - seckill-redis-node-3
+    hostname: seckill-redis-node-3
+    ports:
+      - 6383:6383
+      - 16383:16383
+
+  # seckill redis node 4
+  seckill-redis-node-4:
+    image: redis
+    container_name: seckill-redis-node-4
+    command: redis-server /etc/usr/local/redis.conf
+    volumes:
+      - ./redisConf/seckill-redis-node-4.conf:/etc/usr/local/redis.conf
+    networks:
+      hang-seckill:
+        aliases:
+          - seckill-redis-node-4
+    hostname: seckill-redis-node-4
+    ports:
+      - 6384:6384
+      - 16384:16384
+
+  # seckill redis node 5
+  seckill-redis-node-5:
+    image: redis
+    container_name: seckill-redis-node-5
+    command: redis-server /etc/usr/local/redis.conf
+    volumes:
+      - ./redisConf/seckill-redis-node-5.conf:/etc/usr/local/redis.conf
+    networks:
+      hang-seckill:
+        aliases:
+          - seckill-redis-node-5
+    hostname: seckill-redis-node-5
+    ports:
+      - 6385:6385
+      - 16385:16385
+
+  # seckill redis init
+  seckill-redis-cluster-init:
+    image: redis
+    container_name: seckill-redis-cluster-init
+    networks:
+      hang-seckill:
+        aliases:
+          - seckill-redis-cluster-init
+    depends_on:
+      - seckill-redis-node-0
+      - seckill-redis-node-1
+      - seckill-redis-node-2
+      - seckill-redis-node-3
+      - seckill-redis-node-4
+      - seckill-redis-node-5
+    command: redis-cli -a 123456 --cluster create 192.168.1.5:6380 192.168.1.5:6381 192.168.1.5:6382 192.168.1.5:6383 192.168.1.5:6384 192.168.1.5:6385 --cluster-replicas 1 --cluster-yes
+
+  # seckill-mysql
+  seckill-mysql:
+    image: mysql
+    container_name: seckill-mysql
+    ports:
+      - 3306:3306
+    environment:
+      - "MYSQL_ROOT_PASSWORD=123456"
+    networks:
+      hang-seckill:
+        aliases:
+          - seckill-mysql
+
+  # seckill-rabbitmq
+  seckill-rabbitmq:
+    container_name: seckill-rabbitmq
+    image: rabbitmq:management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbit
+      RABBITMQ_DEFAULT_PASS: 123456
+    networks:
+      hang-seckill:
+        aliases:
+          - seckill-rabbitmq
+
+# network
+networks:
+  hang-seckill:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+          gateway: 172.22.0.1

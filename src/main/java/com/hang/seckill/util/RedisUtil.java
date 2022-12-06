@@ -1,7 +1,7 @@
 package com.hang.seckill.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
@@ -10,8 +10,7 @@ import java.util.concurrent.TimeUnit;
 public class RedisUtil {
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
-
+    private StringRedisTemplate redisTemplate;
 
     /**
      * 获取当个对象

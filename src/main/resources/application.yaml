@@ -7,7 +7,7 @@ server:
 spring:
   # 数据源配置
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/hang-seckill?characterEncoding=utf-8&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/hang_seckill?characterEncoding=utf-8&useSSL=false
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: 123456
@@ -88,8 +88,20 @@ spring:
   # redis 配置
   redis:
     password: 123456
-    port: 6379
-    host: localhost
+    cluster:
+      nodes:
+        - 192.168.1.5:6380
+        - 192.168.1.5:6381
+        - 192.168.1.5:6382
+        - 192.168.1.5:6383
+        - 192.168.1.5:6384
+        - 192.168.1.5:6385
+      max-redirects: 3
+    lettuce:
+      pool:
+        max-idle: 16
+        max-active: 32
+        min-idle: 8
   # web静态资源配置
   web:
     resources:
